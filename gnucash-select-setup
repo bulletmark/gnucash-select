@@ -1,0 +1,66 @@
+#!/bin/bash
+# User setup script.
+# (C) Mark Blakeney, Aug 2020.
+
+PROG="$(basename $0)"
+NAME=${PROG%-*}
+
+BINDIR="/usr/bin"
+APPDIR="/usr/share/applications"
+ICOBAS="/usr/share/icons/hicolor"
+ICODIR="$ICOBAS/scalable/apps"
+DOCDIR="/usr/share/doc/$NAME"
+
+usage() {
+    echo "Usage:"
+    echo "As root: sudo $PROG install|uninstall"
+    echo
+    echo "-d <dir> (option sets DESTDIR for install/uninstall)"
+    exit 1
+}
+
+# Process command line options
+DESTDIR=""
+while getopts d: c; do
+    case $c in
+    d) DESTDIR="$OPTARG";;
+    \?) usage;;
+    esac
+done
+
+shift $((OPTIND - 1))
+
+if [[ $# -ne 1 ]]; then
+    usage
+fi
+
+cmd="$1"
+
+DESTDIR="${DESTDIR%%+(/)}"
+if [[ -z $DESTDIR && $(id -un) != root ]]; then
+    echo "Install or uninstall must be run as sudo/root."
+    exit 1
+fi
+
+if [[ $cmd == install ]]; then
+    install -CDv -m 755 -t $DESTDIR$BINDIR $NAME
+    install -CDv -m 644 -t $DESTDIR$APPDIR $NAME.desktop
+    install -CDv -m 644 -t $DESTDIR$ICODIR $NAME.svg
+    install -CDv -m 644 -t $DESTDIR$DOCDIR README.md
+else
+    rm -rfv $DESTDIR$DOCDIR
+    rm -rfv $DESTDIR$ICODIR/$NAME.svg
+    rm -rfv $DESTDIR$APPDIR/$NAME.desktop
+    rm -rfv $DESTDIR$BINDIR/$NAME
+fi
+
+if [[ -z $DESTDIR ]]; then
+    if [[ -x /usr/bin/update-desktop-database ]]; then
+	/usr/bin/update-desktop-database -q
+    fi
+    if [[ -x /usr/bin/gtk-update-icon-cache ]]; then
+	/usr/bin/gtk-update-icon-cache $ICOBAS
+    fi
+fi
+
+exit 0

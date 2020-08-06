@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Terminal=false
+Name=GnuCash File Selector
+Comment=Present User's GnuCash Files
+Exec=gnucash-select
+Icon=gnucash-select
+StartupWMClass=Toplevel
+Categories=Office;Finance;

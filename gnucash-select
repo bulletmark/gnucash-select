@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+'GnuCash File Selector.'
+import os
+import argparse
+import subprocess
+from collections import Counter
+from pathlib import Path
+import PySimpleGUI as sg
+
+HEADINGS = ('File', ' Open ', 'Backups', 'Logs')
+LOCKEXT = 'LCK'
+GCASHEXT = 'gnucash'
+
+def run_file(workdir: Path, fname: str):
+    'Run Gnucash for given file name'
+    fpath = workdir / (fname + f'.{GCASHEXT}')
+    lockfile = fpath.with_name(fpath.name + f'.{LOCKEXT}')
+    if not lockfile.exists():
+        try:
+            subprocess.Popen(('gnucash', str(fpath)))
+        except Exception:
+            pass
+
+def store_dir(cachepath: Path, newdir: Path):
+    'Store the new directory'
+    cachepath.parent.mkdir(parents=True, exist_ok=True)
+    cachepath.write_text(str(newdir))
+
+def refresh(workdir: Path):
+    'Refresh view of given source dir'
+    if not workdir.exists():
+        return [['<invalid dir>', '', '', '']]
+
+    files = set()
+    files_open = set()
+    files_bkup = Counter()
+    files_log = Counter()
+
+    for p in workdir.iterdir():
+        parts = str(p.name).split('.', maxsplit=4)
+        plen = len(parts)
+        if not (2 <= plen <= 4) or parts[1] != GCASHEXT:
+            continue
+        name = parts[0]
+        if plen == 2:
+            files.add(name)
+            continue
+        if plen == 3:
+            if parts[2] == LOCKEXT:
+                files_open.add(name)
+            continue
+        dateval, ext = parts[2:]
+        if len(dateval) != 14 or not dateval.isdigit():
+            continue
+        if ext == 'log':
+            files_log[name] += 1
+        elif ext == GCASHEXT:
+            files_bkup[name] += 1
+
+    if not files:
+        return [['<empty dir>', '', '', '']]
+
+    return [(f, 'Open' if f in files_open else '', files_bkup[f],
+        files_log[f]) for f in sorted(files)]
+
+if __name__ == '__main__':
+    # Process command line options
+    opt = argparse.ArgumentParser(description=__doc__.strip(),
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    opt.add_argument('-p', '--period', type=int, default=1,
+            help='period in seconds at which to check directory')
+    opt.add_argument('-r', '--rows', type=int, default=6,
+            help='number of file rows in table')
+    args = opt.parse_args()
+
+    period = 1000 * args.period
+    cachepath = Path(os.getenv('XDG_CACHE_HOME',
+        f'~{os.sep}.cache')).expanduser() / opt.prog
+    workdir = Path(cachepath.read_text().strip()) \
+            if cachepath.exists() else Path.home()
+
+    data = refresh(workdir)
+
+    # Build the PySimpleGUI layout
+    layout = [
+        [sg.Input(str(workdir), key='-dir-', enable_events=True, readonly=True,
+            tooltip='Directory where GnuCash files live')],
+        [sg.Table(data, key='-values-', headings=HEADINGS, num_rows=args.rows,
+            max_col_width=40, enable_events=True)],
+        [sg.FolderBrowse('Directory', target='-dir-',
+            tooltip='Select new directory'), sg.Exit()],
+    ]
+
+    window = sg.Window(__doc__, layout, finalize=True)
+    data_vals = window['-values-']
+    for col in (1, 2):
+        data_vals.Widget.column(f'#{col}', anchor='w')
+
+    # Forever ..
+    while True:
+        event, values = window.read(timeout=period)
+        if event in (sg.WIN_CLOSED, 'Exit'):
+            break
+
+        if event == '-dir-':
+            workdir = Path(values[event])
+            store_dir(cachepath, workdir)
+        elif event == '-values-':
+            val = values[event]
+            if val:
+                run_file(workdir, data[val[0]][0])
+
+        data = refresh(workdir)
+        data_vals.update(data)
+
+    window.close()
