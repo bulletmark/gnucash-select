@@ -4,7 +4,7 @@
 from your desktop environment (GNOME, KDE etc) to pop up a small GUI to
 view a list of your [GnuCash][GNUC] files (XML format only).
 
-![gnucash-select](https://imgur.com/F6jxRIk.jpg)
+![gnucash-select](https://i.postimg.cc/Sx2bNLW2/gnucash-select.png)
 
 [gnucash-select][REPO] is useful if you have more than one GnuCash
 file, particularly if you often open two or more of them in parallel. It

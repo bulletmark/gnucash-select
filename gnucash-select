@@ -2,6 +2,7 @@
 'GnuCash File Selector.'
 import os
 import sys
+import time
 import argparse
 import subprocess
 from collections import Counter
@@ -11,26 +12,31 @@ import PySimpleGUI as sg
 HEADINGS = ('File', ' Open ', 'Backups', 'Logs')
 LOCKEXT = 'LCK'
 GCASHEXT = 'gnucash'
+# row color defaults: normal, selected ok, selected failed
+ROWCOLORS = ['#4b586e', 'green', 'red']
+FLASHTIME = 1   # secs
 
 def run_file(workdir: Path, fname: str):
     'Run Gnucash for given file name'
     fpath = workdir / (fname + f'.{GCASHEXT}')
     lockfile = fpath.with_name(fpath.name + f'.{LOCKEXT}')
-    if not lockfile.exists():
-        try:
-            subprocess.Popen(('gnucash', str(fpath)))
-        except Exception:
-            pass
+    if lockfile.exists():
+        return False
+    try:
+        subprocess.Popen(('gnucash', str(fpath)))
+    except Exception:
+        return False
+    return True
 
 def store_dir(cachepath: Path, newdir: Path):
     'Store the new directory'
     cachepath.parent.mkdir(parents=True, exist_ok=True)
-    cachepath.write_text(str(newdir))
+    cachepath.write_text(f'{newdir}\n')
 
 def refresh(workdir: Path):
     'Refresh view of given source dir'
     if not workdir.exists():
-        return [['<invalid dir>', '', '', '']]
+        return [('<invalid dir>', '', '', '')]
 
     files = set()
     files_open = set()
@@ -59,7 +65,7 @@ def refresh(workdir: Path):
             files_bkup[name] += 1
 
     if not files:
-        return [['<empty dir>', '', '', '']]
+        return [('<empty dir>', '', '', '')]
 
     return [(f, 'Open' if f in files_open else '', files_bkup[f],
         files_log[f]) for f in sorted(files)]
@@ -74,7 +80,17 @@ if __name__ == '__main__':
             help='number of file rows in table. Default = %(default)d.')
     opt.add_argument('-t', '--theme',
             help='pysimplegui theme to use [pass "preview" to see options]')
+    opt.add_argument('--row-color', default=ROWCOLORS[0],
+            help='table row color. Default=%(default)s')
+    opt.add_argument('--row-color-ok', default=ROWCOLORS[1],
+            help='table row color when selected ok. Default=%(default)s')
+    opt.add_argument('--row-color-bad', default=ROWCOLORS[2],
+            help='table row color when not selected ok. Default=%(default)s')
     args = opt.parse_args()
+
+    ROWCOLORS[0] = args.row_color
+    ROWCOLORS[1] = args.row_color_ok
+    ROWCOLORS[2] = args.row_color_bad
 
     period = 1000 * args.period
     cachepath = Path(os.getenv('XDG_CACHE_HOME',
@@ -97,6 +113,7 @@ if __name__ == '__main__':
         [sg.Input(str(workdir), key='-dir-', enable_events=True,
             readonly=True, tooltip='Directory where GnuCash files live')],
         [sg.Table(filedata, key='-values-', headings=HEADINGS,
+            background_color=ROWCOLORS[0],
             num_rows=args.rows, max_col_width=40, enable_events=True)],
         [sg.FolderBrowse('Directory', target='-dir-',
             tooltip='Select new directory'), sg.Exit()],
@@ -108,20 +125,36 @@ if __name__ == '__main__':
         data_vals.Widget.column(f'#{col}', anchor='w')
 
     # Forever ..
+    row_colors_e = {}
     while True:
         event, values = window.read(timeout=period)
         if event in (sg.WIN_CLOSED, 'Exit'):
             break
 
+        now = time.monotonic()
         if event == '-dir-':
             workdir = Path(values[event])
             store_dir(cachepath, workdir)
+            row_colors_e = {}
         elif event == '-values-':
             val = values[event]
             if val:
-                run_file(workdir, filedata[val[0]][0])
+                index = val[0]
+                color = 1 if run_file(workdir, filedata[index][0]) else 2
+                row_colors_e[index] = ((now + FLASHTIME), ROWCOLORS[color])
 
+        # Refresh table column data each time
         filedata = refresh(workdir)
-        data_vals.update(filedata)
+
+        # Flush any old/expired flash colors
+        row_colors_e = {k: v for k, v in row_colors_e.items() if v[0] > now}
+
+        # Build list of color tuples for each row. Pysimplegui has a bug
+        # where the first row will not clear so must set all each time
+        row_colors = [(k, row_colors_e.get(k, (None, ROWCOLORS[0]))[1]) for k
+                in range(len(filedata))]
+
+        # Update the displayed table
+        data_vals.update(filedata, row_colors=row_colors)
 
     window.close()
