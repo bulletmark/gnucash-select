@@ -11,6 +11,7 @@ import PySimpleGUI as sg
 
 HEADINGS = ('File', ' Open ', 'Backups', 'Logs')
 LOCKEXT = 'LCK'
+GCASHPROG = 'gnucash'
 GCASHEXT = 'gnucash'
 # row color defaults: normal, selected ok, selected failed
 ROWCOLORS = ['#4b586e', 'green', 'red']
@@ -21,12 +22,12 @@ def run_file(workdir: Path, fname: str):
     fpath = workdir / (fname + f'.{GCASHEXT}')
     lockfile = fpath.with_name(fpath.name + f'.{LOCKEXT}')
     if lockfile.exists():
-        return False
+        return False, None
     try:
-        subprocess.Popen(('gnucash', str(fpath)))
-    except Exception:
-        return False
-    return True
+        subprocess.Popen((GCASHPROG, str(fpath)))
+    except Exception as e:
+        return False, str(e)
+    return True, None
 
 def store_dir(cachepath: Path, newdir: Path):
     'Store the new directory'
@@ -88,10 +89,6 @@ if __name__ == '__main__':
             help='table row color when not selected ok. Default=%(default)s')
     args = opt.parse_args()
 
-    ROWCOLORS[0] = args.row_color
-    ROWCOLORS[1] = args.row_color_ok
-    ROWCOLORS[2] = args.row_color_bad
-
     period = 1000 * args.period
     cachepath = Path(os.getenv('XDG_CACHE_HOME',
         f'~{os.sep}.cache')).expanduser() / opt.prog
@@ -113,7 +110,7 @@ if __name__ == '__main__':
         [sg.Input(str(workdir), key='-dir-', enable_events=True,
             readonly=True, tooltip='Directory where GnuCash files live')],
         [sg.Table(filedata, key='-values-', headings=HEADINGS,
-            background_color=ROWCOLORS[0],
+            background_color=args.row_color,
             num_rows=args.rows, max_col_width=40, enable_events=True)],
         [sg.FolderBrowse('Directory', target='-dir-',
             tooltip='Select new directory'), sg.Exit()],
@@ -140,8 +137,16 @@ if __name__ == '__main__':
             val = values[event]
             if val:
                 index = val[0]
-                color = 1 if run_file(workdir, filedata[index][0]) else 2
-                row_colors_e[index] = ((now + FLASHTIME), ROWCOLORS[color])
+                ok, errmsg = run_file(workdir, filedata[index][0])
+                if ok:
+                    color = args.row_color_ok
+                else:
+                    color = args.row_color_bad
+                    if errmsg:
+                        sg.popup_error(errmsg, title='Open Error',
+                                modal=True, keep_on_top=True)
+
+                row_colors_e[index] = ((now + FLASHTIME), color)
 
         # Refresh table column data each time
         filedata = refresh(workdir)
@@ -150,8 +155,10 @@ if __name__ == '__main__':
         row_colors_e = {k: v for k, v in row_colors_e.items() if v[0] > now}
 
         # Build list of color tuples for each row. Pysimplegui has a bug
-        # where the first row will not clear so must set all each time
-        row_colors = [(k, row_colors_e.get(k, (None, ROWCOLORS[0]))[1]) for k
+        # where row #0 will not reset. The following should work but
+        # instead we have to set all rows each time to work around bug.
+        # row_colors = [(k, v[1]) for k, v in row_colors_e.items()]
+        row_colors = [(k, row_colors_e.get(k, (None, args.row_color))[1]) for k
                 in range(len(filedata))]
 
         # Update the displayed table
