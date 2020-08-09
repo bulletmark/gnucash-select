@@ -6,8 +6,8 @@ view a list of your [GnuCash][GNUC] files (XML format only).
 
 ![gnucash-select](https://i.postimg.cc/Sx2bNLW2/gnucash-select.png)
 
-[gnucash-select][REPO] is useful if you have more than one GnuCash
-file, particularly if you often open two or more of them in parallel. It
+[gnucash-select][REPO] is useful if you have more than one GnuCash file,
+particularly if you often open two or more of them in parallel. It
 iterates through your [GnuCash][GNUC] directory and filters out your
 main financial files from within the many other backup, log, and other
 files which [unfortunately GnuCash also places in that same
@@ -18,9 +18,10 @@ currently open in [GnuCash][GNUC] or not. If the file is not currently
 open, you can click on the file name in the GUI to open it in
 [GnuCash][GNUC].
 
-This utility was created for Linux desktops. I am not sure if or how
-well it works on Windows/Mac. The latest version and documentation is
-available at https://github.com/bulletmark/gnucash-select.
+This utility was created on a Linux desktop. I am not sure how well it
+works on Windows/Mac, raise an issue here if necessary. The latest
+version and documentation is available at
+https://github.com/bulletmark/gnucash-select.
 
 ### INSTALLATION
 
