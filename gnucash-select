@@ -10,12 +10,9 @@ from pathlib import Path
 import PySimpleGUI as sg
 
 HEADINGS = ('File', ' Open ', 'Backups', 'Logs')
-LOCKEXT = 'LCK'
 GCASHPROG = 'gnucash'
-GCASHEXT = 'gnucash'
-# row color defaults: normal, selected ok, selected failed
-ROWCOLORS = ['#4b586e', 'green', 'red']
-FLASHTIME = 1   # secs
+GCASHEXT = GCASHPROG
+LOCKEXT = 'LCK'
 
 def run_file(workdir: Path, fname: str):
     'Run Gnucash for given file name'
@@ -74,18 +71,21 @@ def refresh(workdir: Path):
 if __name__ == '__main__':
     # Process command line options
     opt = argparse.ArgumentParser(description=__doc__.strip())
-    opt.add_argument('-p', '--period', type=int, default=1,
+    opt.add_argument('-p', '--period', type=float, default=1,
             help='period in seconds at which to check directory. '
+            'Default = %(default)d.')
+    opt.add_argument('-f', '--flashtime', type=float, default=1,
+            help='time in seconds to flash after clicking. '
             'Default = %(default)d.')
     opt.add_argument('-r', '--rows', type=int, default=6,
             help='number of file rows in table. Default = %(default)d.')
     opt.add_argument('-t', '--theme',
             help='pysimplegui theme to use [pass "preview" to see options]')
-    opt.add_argument('--row-color', default=ROWCOLORS[0],
+    opt.add_argument('--row-color', default='#4b586e',
             help='table row color. Default=%(default)s')
-    opt.add_argument('--row-color-ok', default=ROWCOLORS[1],
+    opt.add_argument('--row-color-ok', default='green',
             help='table row color when selected ok. Default=%(default)s')
-    opt.add_argument('--row-color-bad', default=ROWCOLORS[2],
+    opt.add_argument('--row-color-bad', default='red',
             help='table row color when not selected ok. Default=%(default)s')
     args = opt.parse_args()
 
@@ -146,7 +146,7 @@ if __name__ == '__main__':
                         sg.popup_error(errmsg, title='Open Error',
                                 modal=True, keep_on_top=True)
 
-                row_colors_e[index] = ((now + FLASHTIME), color)
+                row_colors_e[index] = ((now + args.flashtime), color)
 
         # Refresh table column data each time
         filedata = refresh(workdir)
