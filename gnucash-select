@@ -5,6 +5,7 @@ import sys
 import time
 import argparse
 import subprocess
+import shlex
 from collections import Counter
 from pathlib import Path
 import PySimpleGUI as sg
@@ -13,6 +14,8 @@ HEADINGS = ('File', ' Open ', 'Backups', 'Logs')
 GCASHPROG = 'gnucash'
 GCASHEXT = GCASHPROG
 LOCKEXT = 'LCK'
+PROG = Path(sys.argv[0]).stem
+CNFFILE = Path(f'~/.config/{PROG}-flags.conf').expanduser()
 
 def run_file(workdir: Path, fname: str):
     'Run Gnucash for given file name'
@@ -70,7 +73,9 @@ def refresh(workdir: Path):
 
 if __name__ == '__main__':
     # Process command line options
-    opt = argparse.ArgumentParser(description=__doc__.strip())
+    opt = argparse.ArgumentParser(description=__doc__.strip(),
+            epilog='Note you can set default starting arguments in '
+            f'~/.config/{PROG}-flags.conf.')
     opt.add_argument('-p', '--period', type=float, default=1,
             help='period in seconds at which to check directory. '
             'Default = %(default)d.')
@@ -81,19 +86,32 @@ if __name__ == '__main__':
             help='number of file rows in table. Default = %(default)d.')
     opt.add_argument('-t', '--theme',
             help='pysimplegui theme to use [pass "preview" to see options]')
+    opt.add_argument('-g', '--gtk-theme',
+            help=f'GTK theme to use running {GCASHPROG}, e.g. "Adwaita:light"')
+    opt.add_argument('-w', '--widthdir', type=int, default=40,
+            help='char width of dir field. Default = %(default)d.')
     opt.add_argument('--row-color', default='#4b586e',
             help='table row color. Default=%(default)s')
     opt.add_argument('--row-color-ok', default='green',
             help='table row color when selected ok. Default=%(default)s')
     opt.add_argument('--row-color-bad', default='red',
             help='table row color when not selected ok. Default=%(default)s')
-    args = opt.parse_args()
+
+    # Merge in default args from user config file. Then parse the
+    # command line.
+    cnfargs = shlex.split(CNFFILE.read_text().strip()) \
+            if CNFFILE.exists() else []
+    args = opt.parse_args(cnfargs + sys.argv[1:])
 
     period = 1000 * args.period
     cachepath = Path(os.getenv('XDG_CACHE_HOME',
-        f'~{os.sep}.cache')).expanduser() / opt.prog
+        f'~{os.sep}.cache')).expanduser() / PROG
     workdir = Path(cachepath.read_text().strip()) \
             if cachepath.exists() else Path.home()
+
+    # Set GTK theme for when we start GnuCash
+    if args.gtk_theme:
+        os.environ['GTK_THEME'] = args.gtk_theme
 
     # Get starting file data
     filedata = refresh(workdir)
@@ -107,8 +125,9 @@ if __name__ == '__main__':
 
     # Build the PySimpleGUI layout
     layout = [
-        [sg.Input(str(workdir), key='-dir-', enable_events=True,
-            readonly=True, tooltip='Directory where GnuCash files live')],
+        [sg.Input(str(workdir), key='-dir-', size=(args.widthdir, 1),
+            enable_events=True, readonly=True,
+            tooltip='Directory where GnuCash files live')],
         [sg.Table(filedata, key='-values-', headings=HEADINGS,
             background_color=args.row_color,
             num_rows=args.rows, max_col_width=40, enable_events=True)],
