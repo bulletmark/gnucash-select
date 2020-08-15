@@ -48,6 +48,41 @@ Install this software:
     # cd to source dir, as above
     sudo make uninstall (or sudo ./gnucash-select-setup uninstall)
 
+### OPTIONS
+```
+usage: gnucash-select [-h] [-p PERIOD] [-f FLASHTIME] [-r ROWS] [-t THEME]
+                      [-g GTK_THEME] [-w WIDTHDIR] [--row-color ROW_COLOR]
+                      [--row-color-ok ROW_COLOR_OK]
+                      [--row-color-bad ROW_COLOR_BAD]
+
+GnuCash File Selector.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PERIOD, --period PERIOD
+                        period in seconds at which to check directory. Default
+                        = 1.
+  -f FLASHTIME, --flashtime FLASHTIME
+                        time in seconds to flash after clicking. Default = 1.
+  -r ROWS, --rows ROWS  number of file rows in table. Default = 6.
+  -t THEME, --theme THEME
+                        pysimplegui theme to use [pass "preview" to see
+                        options]
+  -g GTK_THEME, --gtk-theme GTK_THEME
+                        GTK theme to use running gnucash, e.g. "Adwaita:light"
+  -w WIDTHDIR, --widthdir WIDTHDIR
+                        char width of dir field. Default = 40.
+  --row-color ROW_COLOR
+                        table row color. Default=#4b586e
+  --row-color-ok ROW_COLOR_OK
+                        table row color when selected ok. Default=green
+  --row-color-bad ROW_COLOR_BAD
+                        table row color when not selected ok. Default=red
+
+Note you can set default starting arguments in ~/.config/gnucash-select-
+flags.conf.
+```
+
 ### LICENSE
 
 Copyright (C) 2020 Mark Blakeney. This program is distributed under the
