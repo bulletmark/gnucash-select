@@ -23,6 +23,10 @@ works on Windows/Mac, raise an issue here if necessary. The latest
 version and documentation is available at
 https://github.com/bulletmark/gnucash-select.
 
+If you like this utility then you may be interested in another gnucash
+utility I created to [update quote prices from the
+ASX](https://github.com/bulletmark/gnucash-asx-fetch), without using Finance::Quote.
+
 ### INSTALLATION
 
 NOTE: Arch users can just install [_gnucash-select from the
