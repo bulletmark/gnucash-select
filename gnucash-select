@@ -15,7 +15,7 @@ GCASHPROG = 'gnucash'
 GCASHEXT = GCASHPROG
 LOCKEXT = 'LCK'
 PROG = Path(sys.argv[0]).stem
-CNFFILE = Path(f'~/.config/{PROG}-flags.conf').expanduser()
+CNFFILE = f'~/.config/{PROG}-flags.conf'
 
 def run_file(workdir: Path, fname: str):
     'Run Gnucash for given file name'
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     # Process command line options
     opt = argparse.ArgumentParser(description=__doc__.strip(),
             epilog='Note you can set default starting arguments in '
-            f'~/.config/{PROG}-flags.conf.')
+            f'{CNFFILE}.')
     opt.add_argument('-p', '--period', type=float, default=1,
             help='period in seconds at which to check directory. '
             'Default = %(default)d.')
@@ -99,8 +99,9 @@ if __name__ == '__main__':
 
     # Merge in default args from user config file. Then parse the
     # command line.
-    cnfargs = shlex.split(CNFFILE.read_text().strip()) \
-            if CNFFILE.exists() else []
+    cnffile = Path(CNFFILE).expanduser()
+    cnfargs = shlex.split(cnffile.read_text().strip()) \
+            if cnffile.exists() else []
     args = opt.parse_args(cnfargs + sys.argv[1:])
 
     period = 1000 * args.period
