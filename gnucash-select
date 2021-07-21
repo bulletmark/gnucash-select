@@ -133,6 +133,7 @@ if __name__ == '__main__':
             background_color=args.row_color,
             num_rows=args.rows, max_col_width=40, enable_events=True)],
         [sg.FolderBrowse('Directory', target='-dir-',
+            initial_folder=str(workdir),
             tooltip='Select new directory'), sg.Exit()],
     ]
 
