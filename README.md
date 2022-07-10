@@ -1,4 +1,5 @@
 ### GNUCASH-SELECT
+[![AUR](https://img.shields.io/aur/version/gnucash-select)](https://aur.archlinux.org/packages/gnucash-select/)
 
 [gnucash-select][REPO] is a simple desktop utility which you can run
 from your desktop environment (GNOME, KDE etc) to pop up a small GUI to
