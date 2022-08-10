@@ -16,7 +16,8 @@ GCASHPROG = 'gnucash'
 GCASHEXT = GCASHPROG
 LOCKEXT = 'LCK'
 PROG = Path(sys.argv[0]).stem
-CNFFILE = Path(f'~/.config/{PROG}-flags.conf')
+CNFFILE = Path(os.getenv('XDG_CONFIG_HOME', '~/.config'),
+        f'{PROG}-flags.conf')
 
 def run_file(workdir: Path, fname: str):
     'Run Gnucash for given file name'
