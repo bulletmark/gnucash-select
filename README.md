@@ -1,4 +1,4 @@
-### GNUCASH-SELECT
+## GNUCASH-SELECT
 [![AUR](https://img.shields.io/aur/version/gnucash-select)](https://aur.archlinux.org/packages/gnucash-select/)
 
 [gnucash-select][REPO] is a simple desktop utility which you can run
@@ -28,7 +28,7 @@ If you like this utility then you may be interested in another gnucash
 utility I created to [update quote prices from the
 ASX](https://github.com/bulletmark/gnucash-asx-fetch), without using Finance::Quote.
 
-### INSTALLATION
+## INSTALLATION
 
 NOTE: Arch users can just install [_gnucash-select from the
 AUR_][AUR].
@@ -42,18 +42,21 @@ Install this software:
     cd gnucash-select
     sudo make install (or sudo ./gnucash-select-setup install)
 
-### UPGRADE
+## UPGRADE
 
     # cd to source dir, as above
     git pull
     sudo make install (or sudo ./gnucash-select-setup install)
 
-### REMOVAL
+## REMOVAL
 
     # cd to source dir, as above
     sudo make uninstall (or sudo ./gnucash-select-setup uninstall)
 
-### OPTIONS
+## USAGE
+
+Type `gnucash-select -h` to view the following usage summary:
+
 ```
 usage: gnucash-select [-h] [-p PERIOD] [-f FLASHTIME] [-r ROWS] [-t THEME]
                       [-g GTK_THEME] [-w WIDTHDIR] [--row-color ROW_COLOR]
@@ -62,7 +65,7 @@ usage: gnucash-select [-h] [-p PERIOD] [-f FLASHTIME] [-r ROWS] [-t THEME]
 
 GnuCash File Selector.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -p PERIOD, --period PERIOD
                         period in seconds at which to check directory. Default
@@ -84,11 +87,11 @@ optional arguments:
   --row-color-bad ROW_COLOR_BAD
                         table row color when not selected ok. Default=red
 
-Note you can set default starting arguments in ~/.config/gnucash-select-
+Note you can set default starting options in ~/.config/gnucash-select-
 flags.conf.
 ```
 
-### LICENSE
+## LICENSE
 
 Copyright (C) 2020 Mark Blakeney. This program is distributed under the
 terms of the GNU General Public License.

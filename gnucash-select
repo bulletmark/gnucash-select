@@ -76,7 +76,7 @@ def refresh(workdir: Path):
 if __name__ == '__main__':
     # Process command line options
     opt = argparse.ArgumentParser(description=__doc__.strip(),
-            epilog='Note you can set default starting arguments in '
+            epilog='Note you can set default starting options in '
             f'{CNFFILE}.')
     opt.add_argument('-p', '--period', type=float, default=1,
             help='period in seconds at which to check directory. '

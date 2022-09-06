@@ -30,5 +30,8 @@ check:
 	vermin -i -q --no-tips $(NAME)
 	shellcheck $(SHELLCHECK_OPTS) $(NAME)-setup
 
+doc:
+	update-readme-usage
+
 clean:
 	rm -rf __pycache__ *.pyc
