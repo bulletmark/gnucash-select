@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
 'GnuCash File Selector.'
+import argparse
 import os
+import re
+import shlex
+import subprocess
 import sys
 import time
-import argparse
-import subprocess
-import shlex
-import re
 from collections import Counter
 from pathlib import Path
-import PySimpleGUI as sg
+from typing import Union, List, Dict, Tuple, Optional
+
+import platformdirs
+import PySimpleGUI as sg  # type: ignore
 
 HEADINGS = ('File', ' Open ', 'Backups', 'Logs')
 GCASHPROG = 'gnucash'
 GCASHEXT = GCASHPROG
 LOCKEXT = 'LCK'
 PROG = Path(sys.argv[0]).stem
-CNFFILE = Path(os.getenv('XDG_CONFIG_HOME', '~/.config'),
-        f'{PROG}-flags.conf')
+CNFFILE = platformdirs.user_config_path() / f'{PROG}.conf'
 
-def run_file(workdir: Path, fname: str):
+def run_file(workdir: Path, fname: str) -> Tuple[bool, Optional[str]]:
     'Run Gnucash for given file name'
     fpath = workdir / (fname + f'.{GCASHEXT}')
     lockfile = fpath.with_name(fpath.name + f'.{LOCKEXT}')
@@ -31,20 +33,21 @@ def run_file(workdir: Path, fname: str):
         return False, str(e)
     return True, None
 
-def store_dir(cachepath: Path, newdir: Path):
+def store_dir(cachepath: Path, newdir: Path) -> None:
     'Store the new directory'
     cachepath.parent.mkdir(parents=True, exist_ok=True)
     cachepath.write_text(f'{newdir}\n')
 
-def refresh(workdir: Path):
+def refresh(workdir: Path) -> List[Tuple[str, str, Union[str, int],
+                                         Union[str, int]]]:
     'Refresh view of given source dir'
     if not workdir.exists():
         return [('<invalid dir>', '', '', '')]
 
     files = set()
     files_open = set()
-    files_bkup = Counter()
-    files_log = Counter()
+    files_bkup: Dict[str, int] = Counter()
+    files_log: Dict[str, int] = Counter()
 
     for p in workdir.iterdir():
         parts = str(p.name).split('.', maxsplit=4)
@@ -104,18 +107,17 @@ if __name__ == '__main__':
     cnffile = CNFFILE.expanduser()
     if cnffile.exists():
         with cnffile.open() as fp:
-            cnflines = [re.sub(r'#.*$', '', line).strip() for line in fp]
-        cnflines = ' '.join(cnflines).strip()
+            lines = [re.sub(r'#.*$', '', line).strip() for line in fp]
+        cnflines = ' '.join(lines).strip()
     else:
         cnflines = ''
 
     args = opt.parse_args(shlex.split(cnflines) + sys.argv[1:])
 
     period = 1000 * args.period
-    cachepath = Path(os.getenv('XDG_CACHE_HOME',
-        f'~{os.sep}.cache')).expanduser() / PROG
+    cachepath = platformdirs.user_cache_path() / PROG
     workdir = Path(cachepath.read_text().strip()) \
-            if cachepath.exists() else Path.home()
+            if cachepath.is_file() else Path.home()
 
     # Set GTK theme for when we start GnuCash
     if args.gtk_theme:
@@ -150,7 +152,7 @@ if __name__ == '__main__':
         data_vals.Widget.column(f'#{col}', anchor='w')
 
     # Forever ..
-    row_colors_e = {}
+    row_colors_e: Dict[int, Tuple[int, str]] = {}
     while True:
         event, values = window.read(timeout=period)
         if event in (sg.WIN_CLOSED, 'Exit'):

@@ -16,19 +16,18 @@ NAME = gnucash-select
 
 SHELLCHECK_OPTS = -eSC2053,SC2064,SC2086,SC1117,SC2162,SC2181,SC2034,SC1090,SC2115
 
-all:
-	@echo "Type sudo make install|uninstall"
+check:
+	flake8 $(NAME)
+	ruff check $(NAME)
+	mypy $(NAME)
+	vermin -vv --eval-annotations --no-tips -i $(NAME)
+	shellcheck $(SHELLCHECK_OPTS) $(NAME)-setup
 
 install:
 	@./$(NAME)-setup -d "$(DESTDIR)" install
 
 uninstall:
 	@./$(NAME)-setup -d "$(DESTDIR)" uninstall
-
-check:
-	flake8 $(NAME)
-	vermin -i -q --no-tips $(NAME)
-	shellcheck $(SHELLCHECK_OPTS) $(NAME)-setup
 
 doc:
 	update-readme-usage

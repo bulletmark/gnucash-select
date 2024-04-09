@@ -1,1 +1,2 @@
+platformdirs
 pysimplegui<5
