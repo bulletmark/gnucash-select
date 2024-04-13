@@ -57,8 +57,8 @@ Install this software:
 Type `gnucash-select -h` to view the usage summary:
 
 ```
-usage: gnucash-select [-h] [-p PERIOD] [-r ROWS] [-g GTK_THEME]
-                      [-P GNUCASH_PROGRAM] [-f FONT_SIZE]
+usage: gnucash-select [-h] [-p PERIOD] [-r ROWS] [-g GTK_THEME] [-f FONT_SIZE]
+                      [-P GNUCASH_PROGRAM]
 
 GnuCash File Selector
 
@@ -70,10 +70,10 @@ options:
   -r ROWS, --rows ROWS  number of file rows displayed in table, default = 6
   -g GTK_THEME, --gtk-theme GTK_THEME
                         GTK theme to use running gnucash, e.g. "Adwaita:light"
-  -P GNUCASH_PROGRAM, --gnucash-program GNUCASH_PROGRAM
-                        path to GnuCash program, default is "gnucash"
   -f FONT_SIZE, --font-size FONT_SIZE
                         default font size, default=10
+  -P GNUCASH_PROGRAM, --gnucash-program GNUCASH_PROGRAM
+                        path to GnuCash program, default is "gnucash"
 
 Note you can set default starting options in $HOME/.config/gnucash-
 select.conf.
