@@ -20,7 +20,7 @@ check:
 	flake8 $(NAME)
 	ruff check $(NAME)
 	mypy $(NAME)
-	vermin -vv --eval-annotations --no-tips -i $(NAME)
+	vermin -vv --no-tips -i $(NAME)
 	shellcheck $(SHELLCHECK_OPTS) $(NAME)-setup
 
 install:

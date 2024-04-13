@@ -5,7 +5,7 @@
 from your desktop environment (GNOME, KDE etc) to pop up a small GUI to
 view a list of your [GnuCash][GNUC] files (XML format only).
 
-![gnucash-select](https://i.postimg.cc/NfqPMdnH/gnucash-select.png)
+![gnucash-select](gnucash-select.png)
 
 [gnucash-select][REPO] is useful if you have more than one GnuCash file,
 particularly if you often open two or more of them in parallel. It
@@ -33,8 +33,7 @@ ASX](https://github.com/bulletmark/gnucash-asx-fetch), without using Finance::Qu
 NOTE: Arch users can just install [_gnucash-select from the
 AUR_][AUR].
 
-You need Python 3.6 or later, Python 2 is not supported. You also need
-the [PySimpleGUI](https://pypi.org/project/PySimpleGUI/) package.
+You need Python 3.8 or later, Python 2 is not supported.
 
 Install this software:
 
@@ -55,40 +54,26 @@ Install this software:
 
 ## USAGE
 
-Type `gnucash-select -h` to view the following usage summary:
+Type `gnucash-select -h` to view the usage summary:
 
 ```
-usage: gnucash-select [-h] [-p PERIOD] [-f FLASHTIME] [-r ROWS] [-t THEME]
-                      [-g GTK_THEME] [-w WIDTHDIR] [--row-color ROW_COLOR]
-                      [--row-color-ok ROW_COLOR_OK]
-                      [--row-color-bad ROW_COLOR_BAD]
+usage: gnucash-select [-h] [-p PERIOD] [-r ROWS] [-g GTK_THEME] [-f FONT_SIZE]
 
-GnuCash File Selector.
+GnuCash File Selector
 
 options:
   -h, --help            show this help message and exit
   -p PERIOD, --period PERIOD
-                        period in seconds at which to check directory. Default
-                        = 1.
-  -f FLASHTIME, --flashtime FLASHTIME
-                        time in seconds to flash after clicking. Default = 1.
-  -r ROWS, --rows ROWS  number of file rows in table. Default = 6.
-  -t THEME, --theme THEME
-                        pysimplegui theme to use [pass "preview" to see
-                        options]
+                        period in seconds at which to check directory, default
+                        = 1
+  -r ROWS, --rows ROWS  number of file rows displayed in table, default = 6
   -g GTK_THEME, --gtk-theme GTK_THEME
                         GTK theme to use running gnucash, e.g. "Adwaita:light"
-  -w WIDTHDIR, --widthdir WIDTHDIR
-                        char width of dir field. Default = 40.
-  --row-color ROW_COLOR
-                        table row color. Default=#4b586e
-  --row-color-ok ROW_COLOR_OK
-                        table row color when selected ok. Default=green
-  --row-color-bad ROW_COLOR_BAD
-                        table row color when not selected ok. Default=red
+  -f FONT_SIZE, --font-size FONT_SIZE
+                        default font size, default=10
 
-Note you can set default starting options in ~/.config/gnucash-select-
-flags.conf.
+Note you can set default starting options in $HOME/.config/gnucash-
+select.conf.
 ```
 
 ## LICENSE

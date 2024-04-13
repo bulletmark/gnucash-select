@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
-'GnuCash File Selector.'
+'GnuCash File Selector'
+from __future__ import annotations
+
 import argparse
 import os
 import re
 import shlex
 import subprocess
 import sys
-import time
+import tkinter as tk
+import tkinter.font as font
 from collections import Counter
 from pathlib import Path
-from typing import Union, List, Dict, Tuple, Optional
+from tkinter import ttk
+from tkinter.filedialog import askdirectory
+from typing import Optional, Union
 
 import platformdirs
-import PySimpleGUI as sg  # type: ignore
 
 HEADINGS = ('File', ' Open ', 'Backups', 'Logs')
 GCASHPROG = 'gnucash'
@@ -21,35 +25,35 @@ LOCKEXT = 'LCK'
 PROG = Path(sys.argv[0]).stem
 CNFFILE = platformdirs.user_config_path() / f'{PROG}.conf'
 
-def run_file(workdir: Path, fname: str) -> Tuple[bool, Optional[str]]:
+def run_file(srcdir: Path, fname: str) -> Optional[str]:
     'Run Gnucash for given file name'
-    fpath = workdir / (fname + f'.{GCASHEXT}')
+    fpath = srcdir / (fname + f'.{GCASHEXT}')
     lockfile = fpath.with_name(fpath.name + f'.{LOCKEXT}')
     if lockfile.exists():
-        return False, None
+        return f'File {fpath} is already open.'
     try:
         subprocess.Popen((GCASHPROG, str(fpath)))
     except Exception as e:
-        return False, str(e)
-    return True, None
+        return str(e)
+    return None
 
 def store_dir(cachepath: Path, newdir: Path) -> None:
     'Store the new directory'
     cachepath.parent.mkdir(parents=True, exist_ok=True)
     cachepath.write_text(f'{newdir}\n')
 
-def refresh(workdir: Path) -> List[Tuple[str, str, Union[str, int],
-                                         Union[str, int]]]:
+def refresh_files(srcdir: Path) -> list[tuple[str, str, Union[str, int],
+                                              Union[str, int]]]:
     'Refresh view of given source dir'
-    if not workdir.exists():
+    if not srcdir.exists():
         return [('<invalid dir>', '', '', '')]
 
     files = set()
     files_open = set()
-    files_bkup: Dict[str, int] = Counter()
-    files_log: Dict[str, int] = Counter()
+    files_bkup: dict[str, int] = Counter()
+    files_log: dict[str, int] = Counter()
 
-    for p in workdir.iterdir():
+    for p in srcdir.iterdir():
         parts = str(p.name).split('.', maxsplit=4)
         plen = len(parts)
         if not (2 <= plen <= 4) or parts[1] != GCASHEXT:
@@ -76,31 +80,113 @@ def refresh(workdir: Path) -> List[Tuple[str, str, Union[str, int],
     return [(f, 'Open' if f in files_open else '', files_bkup[f],
         files_log[f]) for f in sorted(files)]
 
+class UI:
+    'Class to manage the display'
+    def __init__(self, root, args):
+        root.title(__doc__)
+        root.resizable(False, False)
+        font.nametofont("TkDefaultFont").configure(size=args.font_size)
+        font.nametofont("TkFixedFont").configure(size=args.font_size)
+
+        self.period = 1000 * args.period
+        self.cachepath = platformdirs.user_cache_path() / PROG
+        self.srcdir = Path(self.cachepath.read_text().strip()) \
+                if self.cachepath.is_file() else Path.home()
+
+        # Set GTK theme for when we start GnuCash
+        if args.gtk_theme:
+            os.environ['GTK_THEME'] = args.gtk_theme
+
+        mf = ttk.Frame(root, padding="8 8 10 10")
+        mf.grid(column=0, row=0, sticky='nsew')
+        root.columnconfigure(0, weight=1)
+        root.rowconfigure(0, weight=1)
+        self.root = root
+
+        # Use label to display directory name
+        self.dirname = ttk.Label(mf, text=str(self.srcdir), borderwidth=4,
+                               padding=4, relief='groove')
+        self.dirname.grid(column=0, row=0, columnspan=2, sticky='we')
+
+        # Use Treeview to display list of files
+        self.filelist = ttk.Treeview(mf, columns=HEADINGS, height=args.rows,
+                                  selectmode='browse', show='headings')
+        for ix, h in enumerate(HEADINGS):
+            self.filelist.heading(h, text=h)
+            if ix > 0:
+                self.filelist.column(h, width=((len(h) + 2) * args.font_size))
+
+        self.filelist.grid(column=0, row=1, columnspan=2, sticky='we')
+
+        self.filelist.bind('<<TreeviewSelect>>', self.select_file)
+
+        scroll = ttk.Scrollbar(mf, orient='vertical',
+                               command=self.filelist.yview)
+
+        self.filelist.configure(yscroll=scroll.set)
+        scroll.grid(column=2, row=1, sticky='nsw')
+
+        # Add buttons
+        ttk.Button(mf, text='Directory',
+                   command=self.select_dir).grid(column=0, row=2)
+        ttk.Button(mf, text='Exit', command=root.quit).grid(column=1, row=2)
+
+        # Add padding for all widgets
+        for child in mf.winfo_children():
+            child.grid_configure(padx=4, pady=4)
+
+        self.filedata = []
+        self.refresh_ui()
+
+    def refresh_ui(self):
+        'Refresh and redisplay the directory of files'
+        filedata = refresh_files(self.srcdir)
+        if self.filedata != filedata:
+            self.filedata = filedata
+            self.filelist.delete(*self.filelist.get_children())
+            for line in filedata:
+                self.filelist.insert('', 'end', values=line)
+
+        self.refresh_ui_id = self.root.after(self.period, self.refresh_ui)
+
+    def select_file(self, event):
+        'Select a file to open'
+        select = self.filelist.selection()
+        if not select:
+            return
+
+        tindex = self.filelist.index(select[0])
+        errmsg = run_file(self.srcdir, self.filedata[tindex][0])
+        if errmsg:
+            tk.messagebox.showerror(f'{__doc__} Error', errmsg)
+
+    def select_dir(self):
+        'Select a new base directory'
+        adir = askdirectory(initialdir=self.srcdir, mustexist=True)
+        if adir:
+            apath = Path(adir)
+            if apath != self.srcdir:
+                self.srcdir = apath
+                store_dir(self.cachepath, apath)
+                self.dirname.configure(text=adir)
+                self.root.after_cancel(self.refresh_ui_id)
+                self.refresh_ui()
+
 if __name__ == '__main__':
     # Process command line options
     opt = argparse.ArgumentParser(description=__doc__.strip(),
             epilog='Note you can set default starting options in '
             f'{CNFFILE}.')
-    opt.add_argument('-p', '--period', type=float, default=1,
-            help='period in seconds at which to check directory. '
-            'Default = %(default)d.')
-    opt.add_argument('-f', '--flashtime', type=float, default=1,
-            help='time in seconds to flash after clicking. '
-            'Default = %(default)d.')
+    opt.add_argument('-p', '--period', type=int, default=1,
+            help='period in seconds at which to check directory, '
+                     'default = %(default)d')
     opt.add_argument('-r', '--rows', type=int, default=6,
-            help='number of file rows in table. Default = %(default)d.')
-    opt.add_argument('-t', '--theme',
-            help='pysimplegui theme to use [pass "preview" to see options]')
+            help='number of file rows displayed in table, '
+                     'default = %(default)d')
     opt.add_argument('-g', '--gtk-theme',
             help=f'GTK theme to use running {GCASHPROG}, e.g. "Adwaita:light"')
-    opt.add_argument('-w', '--widthdir', type=int, default=40,
-            help='char width of dir field. Default = %(default)d.')
-    opt.add_argument('--row-color', default='#4b586e',
-            help='table row color. Default=%(default)s')
-    opt.add_argument('--row-color-ok', default='green',
-            help='table row color when selected ok. Default=%(default)s')
-    opt.add_argument('--row-color-bad', default='red',
-            help='table row color when not selected ok. Default=%(default)s')
+    opt.add_argument('-f', '--font-size', type=int, default=10,
+            help='default font size, default=%(default)d')
 
     # Merge in default args from user config file. Then parse the
     # command line.
@@ -114,84 +200,6 @@ if __name__ == '__main__':
 
     args = opt.parse_args(shlex.split(cnflines) + sys.argv[1:])
 
-    period = 1000 * args.period
-    cachepath = platformdirs.user_cache_path() / PROG
-    workdir = Path(cachepath.read_text().strip()) \
-            if cachepath.is_file() else Path.home()
-
-    # Set GTK theme for when we start GnuCash
-    if args.gtk_theme:
-        os.environ['GTK_THEME'] = args.gtk_theme
-
-    # Get starting file data
-    filedata = refresh(workdir)
-
-    # Set theme if specified, or view all options
-    if args.theme:
-        if args.theme == 'preview':
-            sg.theme_previewer()
-            sys.exit()
-        sg.theme(args.theme)
-
-    # Build the PySimpleGUI layout
-    layout = [
-        [sg.Input(str(workdir), key='-dir-', size=(args.widthdir, 1),
-            enable_events=True, readonly=True,
-            tooltip='Directory where GnuCash files live')],
-        [sg.Table(filedata, key='-values-', headings=HEADINGS,
-            background_color=args.row_color,
-            num_rows=args.rows, max_col_width=40, enable_events=True)],
-        [sg.FolderBrowse('Directory', target='-dir-',
-            initial_folder=str(workdir),
-            tooltip='Select new directory'), sg.Exit()],
-    ]
-
-    window = sg.Window(__doc__.rstrip('.'), layout, finalize=True)
-    data_vals = window['-values-']
-    for col in (1, 2):
-        data_vals.Widget.column(f'#{col}', anchor='w')
-
-    # Forever ..
-    row_colors_e: Dict[int, Tuple[int, str]] = {}
-    while True:
-        event, values = window.read(timeout=period)
-        if event in (sg.WIN_CLOSED, 'Exit'):
-            break
-
-        now = time.monotonic()
-        if event == '-dir-':
-            workdir = Path(values[event])
-            store_dir(cachepath, workdir)
-            row_colors_e = {}
-        elif event == '-values-':
-            val = values[event]
-            if val:
-                index = val[0]
-                ok, errmsg = run_file(workdir, filedata[index][0])
-                if ok:
-                    color = args.row_color_ok
-                else:
-                    color = args.row_color_bad
-                    if errmsg:
-                        sg.popup_error(errmsg, title='Open Error',
-                                modal=True, keep_on_top=True)
-
-                row_colors_e[index] = ((now + args.flashtime), color)
-
-        # Refresh table column data each time
-        filedata = refresh(workdir)
-
-        # Flush any old/expired flash colors
-        row_colors_e = {k: v for k, v in row_colors_e.items() if v[0] > now}
-
-        # Build list of color tuples for each row. Pysimplegui has a bug
-        # where row #0 will not reset. The following should work but
-        # instead we have to set all rows each time to work around bug.
-        # row_colors = [(k, v[1]) for k, v in row_colors_e.items()]
-        row_colors = [(k, row_colors_e.get(k, (None, args.row_color))[1]) for k
-                in range(len(filedata))]
-
-        # Update the displayed table
-        data_vals.update(filedata, row_colors=row_colors)
-
-    window.close()
+    root = tk.Tk()
+    UI(root, args)
+    root.mainloop()
