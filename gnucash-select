@@ -156,7 +156,9 @@ class UI:
             return
 
         tindex = self.filelist.index(select[0])
-        errmsg = run_file(self.srcdir, self.filedata[tindex][0])
+        filestem = self.filedata[tindex][0]
+        errmsg = run_file(self.srcdir, filestem) \
+                if filestem[0] != '<' else 'No files to open'
         if errmsg:
             tk.messagebox.showerror(f'{__doc__} Error', errmsg)
 
