@@ -25,14 +25,14 @@ LOCKEXT = 'LCK'
 PROG = Path(sys.argv[0]).stem
 CNFFILE = platformdirs.user_config_path() / f'{PROG}.conf'
 
-def run_file(srcdir: Path, fname: str) -> Optional[str]:
+def run_file(gc_prog: str, srcdir: Path, fname: str) -> Optional[str]:
     'Run Gnucash for given file name'
     fpath = srcdir / (fname + f'.{GCASHEXT}')
     lockfile = fpath.with_name(fpath.name + f'.{LOCKEXT}')
     if lockfile.exists():
         return f'File {fpath} is already open.'
     try:
-        subprocess.Popen((GCASHPROG, str(fpath)))
+        subprocess.Popen((gc_prog, str(fpath)))
     except Exception as e:
         return str(e)
     return None
@@ -92,6 +92,7 @@ class UI:
         self.cachepath = platformdirs.user_cache_path() / PROG
         self.srcdir = Path(self.cachepath.read_text().strip()) \
                 if self.cachepath.is_file() else Path.home()
+        self.gc_prog = args.gnucash_program
 
         # Set GTK theme for when we start GnuCash
         if args.gtk_theme:
@@ -157,7 +158,7 @@ class UI:
 
         tindex = self.filelist.index(select[0])
         filestem = self.filedata[tindex][0]
-        errmsg = run_file(self.srcdir, filestem) \
+        errmsg = run_file(self.gc_prog, self.srcdir, filestem) \
                 if filestem[0] != '<' else 'No files to open'
         if errmsg:
             tk.messagebox.showerror(f'{__doc__} Error', errmsg)
@@ -187,6 +188,8 @@ if __name__ == '__main__':
                      'default = %(default)d')
     opt.add_argument('-g', '--gtk-theme',
             help=f'GTK theme to use running {GCASHPROG}, e.g. "Adwaita:light"')
+    opt.add_argument('-P', '--gnucash-program', default=GCASHPROG,
+            help='path to GnuCash program, default is "%(default)s"')
     opt.add_argument('-f', '--font-size', type=int, default=10,
             help='default font size, default=%(default)d')
 
