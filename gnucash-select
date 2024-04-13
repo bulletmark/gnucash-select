@@ -46,7 +46,7 @@ def refresh_files(srcdir: Path) -> list[tuple[str, str, Union[str, int],
                                               Union[str, int]]]:
     'Refresh view of given source dir'
     if not srcdir.exists():
-        return [('<invalid dir>', '', '', '')]
+        return [('<invalid directory>', '', '', '')]
 
     files = set()
     files_open = set()
@@ -61,21 +61,19 @@ def refresh_files(srcdir: Path) -> list[tuple[str, str, Union[str, int],
         name = parts[0]
         if plen == 2:
             files.add(name)
-            continue
-        if plen == 3:
+        elif plen == 3:
             if parts[2] == LOCKEXT:
                 files_open.add(name)
-            continue
-        dateval, ext = parts[2:]
-        if len(dateval) != 14 or not dateval.isdigit():
-            continue
-        if ext == 'log':
-            files_log[name] += 1
-        elif ext == GCASHEXT:
-            files_bkup[name] += 1
+        else:
+            dateval, ext = parts[2:]
+            if len(dateval) == 14 and dateval.isdigit():
+                if ext == 'log':
+                    files_log[name] += 1
+                elif ext == GCASHEXT:
+                    files_bkup[name] += 1
 
     if not files:
-        return [('<empty dir>', '', '', '')]
+        return [('<no files>', '', '', '')]
 
     return [(f, 'Open' if f in files_open else '', files_bkup[f],
         files_log[f]) for f in sorted(files)]
@@ -85,8 +83,7 @@ class UI:
     def __init__(self, root, args):
         root.title(__doc__)
         root.resizable(False, False)
-        font.nametofont("TkDefaultFont").configure(size=args.font_size)
-        font.nametofont("TkFixedFont").configure(size=args.font_size)
+        font.nametofont('TkDefaultFont').configure(size=args.font_size)
 
         self.period = 1000 * args.period
         self.cachepath = platformdirs.user_cache_path() / PROG
@@ -98,7 +95,7 @@ class UI:
         if args.gtk_theme:
             os.environ['GTK_THEME'] = args.gtk_theme
 
-        mf = ttk.Frame(root, padding="8 8 10 10")
+        mf = ttk.Frame(root, padding='8 8 10 10')
         mf.grid(column=0, row=0, sticky='nsew')
         root.columnconfigure(0, weight=1)
         root.rowconfigure(0, weight=1)
@@ -180,7 +177,7 @@ if __name__ == '__main__':
     opt = argparse.ArgumentParser(description=__doc__.strip(),
             epilog='Note you can set default starting options in '
             f'{CNFFILE}.')
-    opt.add_argument('-p', '--period', type=int, default=1,
+    opt.add_argument('-p', '--period', type=int, default=2,
             help='period in seconds at which to check directory, '
                      'default = %(default)d')
     opt.add_argument('-r', '--rows', type=int, default=6,

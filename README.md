@@ -66,7 +66,7 @@ options:
   -h, --help            show this help message and exit
   -p PERIOD, --period PERIOD
                         period in seconds at which to check directory, default
-                        = 1
+                        = 2
   -r ROWS, --rows ROWS  number of file rows displayed in table, default = 6
   -g GTK_THEME, --gtk-theme GTK_THEME
                         GTK theme to use running gnucash, e.g. "Adwaita:light"
