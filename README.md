@@ -20,7 +20,7 @@ open, you can click on the file name in the GUI to open it in
 [GnuCash][GNUC].
 
 This utility was created on a Linux desktop. I am not sure how well it
-works on Windows/Mac, raise an issue here if necessary. The latest
+works on macOS or Windows, raise an issue here if necessary. The latest
 version and documentation is available at
 https://github.com/bulletmark/gnucash-select.
 
