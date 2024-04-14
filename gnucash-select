@@ -41,7 +41,7 @@ def store_dir(cachepath: Path, newdir: Path) -> None:
 def refresh_files(srcdir: Path) -> list[tuple[str, str, Union[str, int],
                                               Union[str, int]]]:
     'Refresh view of given source dir'
-    if not srcdir.exists():
+    if not srcdir.is_dir():
         return [('<invalid directory>', '', '', '')]
 
     files = set()
