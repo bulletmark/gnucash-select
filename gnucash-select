@@ -25,12 +25,8 @@ LOCKEXT = 'LCK'
 PROG = Path(sys.argv[0]).stem
 CNFFILE = platformdirs.user_config_path() / f'{PROG}.conf'
 
-def run_file(gc_prog: str, srcdir: Path, fname: str) -> Optional[str]:
+def run_file(gc_prog: str, fpath: Path) -> Optional[str]:
     'Run Gnucash for given file name'
-    fpath = srcdir / (fname + f'.{GCASHEXT}')
-    lockfile = fpath.with_name(fpath.name + f'.{LOCKEXT}')
-    if lockfile.exists():
-        return f'File {fpath} is already open.'
     try:
         subprocess.Popen((gc_prog, str(fpath)))
     except Exception as e:
@@ -155,8 +151,19 @@ class UI:
 
         tindex = self.filelist.index(select[0])
         filestem = self.filedata[tindex][0]
-        errmsg = run_file(self.gc_prog, self.srcdir, filestem) \
-                if filestem[0] != '<' else 'No files to open'
+        if filestem[0] == '<':
+            errmsg = 'No files to open'
+        else:
+            fpath = self.srcdir / f'{filestem}.{GCASHEXT}'
+            lockfile = fpath.with_name(fpath.name + f'.{LOCKEXT}')
+            if lockfile.exists() and not tk.messagebox.askokcancel(__doc__,
+                    f'File "{filestem}" is already open. '
+                    'Do you want to open it again?',
+                    default='cancel'):
+                return
+
+            errmsg = run_file(self.gc_prog, fpath)
+
         if errmsg:
             tk.messagebox.showerror(f'{__doc__} Error', errmsg)
 
