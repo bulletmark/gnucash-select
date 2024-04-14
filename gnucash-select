@@ -19,8 +19,8 @@ from typing import Optional, Union
 import platformdirs
 
 HEADINGS = ('File', ' Open ', 'Backups', 'Logs')
-GCASHPROG = 'gnucash'
-GCASHEXT = GCASHPROG
+GCASHPROG = 'gnucash' + Path(sys.executable).suffix
+GCASHEXT = Path(GCASHPROG).stem
 LOCKEXT = 'LCK'
 PROG = Path(sys.argv[0]).stem
 CNFFILE = platformdirs.user_config_path() / f'{PROG}.conf'
