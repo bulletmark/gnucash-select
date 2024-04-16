@@ -33,11 +33,6 @@ def run_file(gc_prog: str, fpath: Path) -> Optional[str]:
         return str(e)
     return None
 
-def store_dir(cachepath: Path, newdir: Path) -> None:
-    'Store the new directory'
-    cachepath.parent.mkdir(parents=True, exist_ok=True)
-    cachepath.write_text(f'{newdir}\n')
-
 def refresh_files(srcdir: Path) -> list[tuple[str, str, Union[str, int],
                                               Union[str, int]]]:
     'Refresh view of given source dir'
@@ -80,6 +75,7 @@ class UI:
         root.title(__doc__)
         root.resizable(False, False)
         font.nametofont('TkDefaultFont').configure(size=args.font_size)
+        self.root = root
 
         self.period = 1000 * args.period
         self.cachepath = platformdirs.user_cache_path() / PROG
@@ -91,11 +87,11 @@ class UI:
         if args.gtk_theme:
             os.environ['GTK_THEME'] = args.gtk_theme
 
+        # Create the main frame
         mf = ttk.Frame(root, padding='8 8 10 10')
         mf.grid(column=0, row=0, sticky='nsew')
         root.columnconfigure(0, weight=1)
         root.rowconfigure(0, weight=1)
-        self.root = root
 
         # Use label to display directory name
         self.dirname = ttk.Label(mf, text=str(self.srcdir), borderwidth=4,
@@ -130,6 +126,8 @@ class UI:
             child.grid_configure(padx=4, pady=4)
 
         self.filedata = []
+
+        # Kick off periodic display refresh
         self.refresh_ui()
 
     def refresh_ui(self):
@@ -168,16 +166,26 @@ class UI:
             tk.messagebox.showerror(f'{__doc__} Error', errmsg)
 
     def select_dir(self):
-        'Select a new base directory'
+        'Select a new source directory'
         adir = askdirectory(initialdir=self.srcdir, mustexist=True)
-        if adir:
-            apath = Path(adir)
-            if apath != self.srcdir:
-                self.srcdir = apath
-                store_dir(self.cachepath, apath)
-                self.dirname.configure(text=adir)
-                self.root.after_cancel(self.refresh_ui_id)
-                self.refresh_ui()
+        if not adir:
+            return
+
+        apath = Path(adir)
+        if apath == self.srcdir:
+            return
+
+        # Source directory has changed
+        self.srcdir = apath
+
+        # Store the new directory'
+        self.cachepath.parent.mkdir(parents=True, exist_ok=True)
+        self.cachepath.write_text(f'{apath}\n')
+
+        # Update display and fetch new data
+        self.dirname.configure(text=adir)
+        self.root.after_cancel(self.refresh_ui_id)
+        self.refresh_ui()
 
 if __name__ == '__main__':
     # Process command line options
