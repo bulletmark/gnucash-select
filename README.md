@@ -33,7 +33,7 @@ ASX](https://github.com/bulletmark/gnucash-asx-fetch), without using Finance::Qu
 NOTE: Arch users can just install [_gnucash-select from the
 AUR_][AUR].
 
-You need Python 3.8 or later, Python 2 is not supported.
+You need Python 3.7 or later, Python 2 is not supported.
 
 Install this software:
 
