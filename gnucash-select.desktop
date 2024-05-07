@@ -5,5 +5,5 @@ Name=GnuCash File Selector
 Comment=Present User's GnuCash Files
 Exec=gnucash-select
 Icon=gnucash-select
-StartupWMClass=Toplevel
+StartupWMClass=gnucash-select
 Categories=Office;Finance;

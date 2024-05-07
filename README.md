@@ -33,24 +33,28 @@ ASX](https://github.com/bulletmark/gnucash-asx-fetch), without using Finance::Qu
 NOTE: Arch users can just install [_gnucash-select from the
 AUR_][AUR].
 
-You need Python 3.7 or later, Python 2 is not supported.
+You need Python 3.7 or later, then install this software:
 
-Install this software:
-
-    git clone https://github.com/bulletmark/gnucash-select.git
-    cd gnucash-select
-    sudo make install (or sudo ./gnucash-select-setup install)
+```sh
+git clone https://github.com/bulletmark/gnucash-select.git
+cd gnucash-select
+sudo make install (or sudo ./gnucash-select-setup install)
+```
 
 ## UPGRADE
 
-    # cd to source dir, as above
-    git pull
-    sudo make install (or sudo ./gnucash-select-setup install)
+```sh
+# cd to source dir, as above
+git pull
+sudo make install (or sudo ./gnucash-select-setup install)
+```
 
 ## REMOVAL
 
-    # cd to source dir, as above
-    sudo make uninstall (or sudo ./gnucash-select-setup uninstall)
+```sh
+# cd to source dir, as above
+sudo make uninstall (or sudo ./gnucash-select-setup uninstall)
+```
 
 ## USAGE
 

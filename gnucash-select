@@ -217,6 +217,6 @@ if __name__ == '__main__':
 
     args = opt.parse_args(shlex.split(cnflines) + sys.argv[1:])
 
-    root = tk.Tk()
+    root = tk.Tk(className=PROG)
     UI(root, args)
     root.mainloop()
