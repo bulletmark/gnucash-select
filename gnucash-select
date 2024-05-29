@@ -96,7 +96,7 @@ class UI:
         # Use label to display directory name
         self.dirname = ttk.Label(mf, text=str(self.srcdir), borderwidth=4,
                                padding=4, relief='groove')
-        self.dirname.grid(column=0, row=0, columnspan=2, sticky='we')
+        self.dirname.grid(column=0, row=0, columnspan=3, sticky='we')
 
         # Use Treeview to display list of files
         self.filelist = ttk.Treeview(mf, columns=HEADINGS, height=args.rows,
