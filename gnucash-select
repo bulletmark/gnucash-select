@@ -14,7 +14,7 @@ from collections import Counter
 from pathlib import Path
 from tkinter import ttk
 from tkinter.filedialog import askdirectory
-from typing import Optional, Union
+from typing import Union
 
 import platformdirs
 
@@ -25,7 +25,7 @@ LOCKEXT = 'LCK'
 PROG = Path(sys.argv[0]).stem
 CNFFILE = platformdirs.user_config_path() / f'{PROG}.conf'
 
-def run_file(gc_prog: str, fpath: Path) -> Optional[str]:
+def run_file(gc_prog: str, fpath: Path) -> str | None:
     'Run Gnucash for given file name'
     try:
         subprocess.Popen((gc_prog, str(fpath)))
