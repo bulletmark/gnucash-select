@@ -17,7 +17,6 @@ NAME = gnucash-select
 SHELLCHECK_OPTS = -eSC2053,SC2064,SC2086,SC1117,SC2162,SC2181,SC2034,SC1090,SC2115
 
 check:
-	flake8 $(NAME)
 	ruff check $(NAME)
 	mypy $(NAME)
 	vermin -vv --no-tips -i $(NAME)
