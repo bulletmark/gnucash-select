@@ -122,7 +122,7 @@ class UI:
 
         scroll = ttk.Scrollbar(mf, orient='vertical', command=self.filelist.yview)
 
-        self.filelist.configure(yscroll=scroll.set)
+        self.filelist.configure(yscroll=scroll.set)  # type: ignore
         scroll.grid(column=2, row=1, sticky='nsw')
 
         # Add buttons
@@ -149,7 +149,7 @@ class UI:
 
         self.refresh_ui_id = self.root.after(self.period, self.refresh_ui)
 
-    def select_file(self, event):
+    def select_file(self, __event__):
         "Select a file to open"
         select = self.filelist.selection()
         if not select:
@@ -162,7 +162,7 @@ class UI:
         else:
             fpath = self.srcdir / f'{filestem}.{GCASHEXT}'
             lockfile = fpath.with_name(fpath.name + f'.{LOCKEXT}')
-            if lockfile.exists() and not tk.messagebox.askokcancel(
+            if lockfile.exists() and not tk.messagebox.askokcancel(  # type: ignore
                 __doc__,
                 f'File "{filestem}" is already open. Do you want to open it again?',
                 default='cancel',
@@ -172,7 +172,7 @@ class UI:
             errmsg = run_file(self.gc_prog, fpath)
 
         if errmsg:
-            tk.messagebox.showerror(f'{__doc__} Error', errmsg)
+            tk.messagebox.showerror(f'{__doc__} Error', errmsg)  # type: ignore
 
     def select_dir(self):
         "Select a new source directory"
@@ -200,7 +200,7 @@ class UI:
 if __name__ == '__main__':
     # Process command line options
     opt = argparse.ArgumentParser(
-        description=__doc__.strip(),
+        description=__doc__,
         epilog=f'Note you can set default starting options in {CNFFILE}.',
     )
     opt.add_argument(

@@ -25,6 +25,7 @@ skip-magic-trailing-comma = true
 [tool.edit-lint]
 linters = [
   "ruff check",
+  "mypy",
   "pyright",
 ]
 
