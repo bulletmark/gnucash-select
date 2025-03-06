@@ -68,15 +68,14 @@ GnuCash File Selector
 
 options:
   -h, --help            show this help message and exit
-  -p PERIOD, --period PERIOD
-                        period in seconds at which to check directory, default
+  -p, --period PERIOD   period in seconds at which to check directory, default
                         = 2
-  -r ROWS, --rows ROWS  number of file rows displayed in table, default = 6
-  -g GTK_THEME, --gtk-theme GTK_THEME
+  -r, --rows ROWS       number of file rows displayed in table, default = 6
+  -g, --gtk-theme GTK_THEME
                         GTK theme to use running gnucash, e.g. "Adwaita:light"
-  -f FONT_SIZE, --font-size FONT_SIZE
+  -f, --font-size FONT_SIZE
                         default font size, default=10
-  -P GNUCASH_PROGRAM, --gnucash-program GNUCASH_PROGRAM
+  -P, --gnucash-program GNUCASH_PROGRAM
                         path to GnuCash program, default is "gnucash"
 
 Note you can set default starting options in $HOME/.config/gnucash-

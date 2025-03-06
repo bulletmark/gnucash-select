@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-'GnuCash File Selector'
+"GnuCash File Selector"
+
 from __future__ import annotations
 
 import argparse
@@ -24,16 +25,18 @@ LOCKEXT = 'LCK'
 PROG = Path(sys.argv[0]).stem
 CNFFILE = platformdirs.user_config_path() / f'{PROG}.conf'
 
+
 def run_file(gc_prog: str, fpath: Path) -> str | None:
-    'Run Gnucash for given file name'
+    "Run Gnucash for given file name"
     try:
         subprocess.Popen((gc_prog, str(fpath)))
     except Exception as e:
         return str(e)
     return None
 
+
 def refresh_files(srcdir: Path) -> list[tuple[str, str, str | int, str | int]]:
-    'Refresh view of given source dir'
+    "Refresh view of given source dir"
     if not srcdir.is_dir():
         return [('<invalid directory>', '', '', '')]
 
@@ -64,11 +67,15 @@ def refresh_files(srcdir: Path) -> list[tuple[str, str, str | int, str | int]]:
     if not files:
         return [('<no files>', '', '', '')]
 
-    return [(f, 'Open' if f in files_open else '', files_bkup[f],
-        files_log[f]) for f in sorted(files)]
+    return [
+        (f, 'Open' if f in files_open else '', files_bkup[f], files_log[f])
+        for f in sorted(files)
+    ]
+
 
 class UI:
-    'Class to manage the display'
+    "Class to manage the display"
+
     def __init__(self, root, args):
         root.title(__doc__)
         root.resizable(False, False)
@@ -77,8 +84,11 @@ class UI:
 
         self.period = 1000 * args.period
         self.cachepath = platformdirs.user_cache_path() / PROG
-        self.srcdir = Path(self.cachepath.read_text().strip()) \
-                if self.cachepath.is_file() else Path.home()
+        self.srcdir = (
+            Path(self.cachepath.read_text().strip())
+            if self.cachepath.is_file()
+            else Path.home()
+        )
         self.gc_prog = args.gnucash_program
 
         # Set GTK theme for when we start GnuCash
@@ -92,13 +102,15 @@ class UI:
         root.rowconfigure(0, weight=1)
 
         # Use label to display directory name
-        self.dirname = ttk.Label(mf, text=str(self.srcdir), borderwidth=4,
-                               padding=4, relief='groove')
+        self.dirname = ttk.Label(
+            mf, text=str(self.srcdir), borderwidth=4, padding=4, relief='groove'
+        )
         self.dirname.grid(column=0, row=0, columnspan=3, sticky='we')
 
         # Use Treeview to display list of files
-        self.filelist = ttk.Treeview(mf, columns=HEADINGS, height=args.rows,
-                                  selectmode='browse', show='headings')
+        self.filelist = ttk.Treeview(
+            mf, columns=HEADINGS, height=args.rows, selectmode='browse', show='headings'
+        )
         for ix, h in enumerate(HEADINGS):
             self.filelist.heading(h, text=h)
             if ix > 0:
@@ -108,15 +120,13 @@ class UI:
 
         self.filelist.bind('<<TreeviewSelect>>', self.select_file)
 
-        scroll = ttk.Scrollbar(mf, orient='vertical',
-                               command=self.filelist.yview)
+        scroll = ttk.Scrollbar(mf, orient='vertical', command=self.filelist.yview)
 
         self.filelist.configure(yscroll=scroll.set)
         scroll.grid(column=2, row=1, sticky='nsw')
 
         # Add buttons
-        ttk.Button(mf, text='Directory',
-                   command=self.select_dir).grid(column=0, row=2)
+        ttk.Button(mf, text='Directory', command=self.select_dir).grid(column=0, row=2)
         ttk.Button(mf, text='Exit', command=root.quit).grid(column=1, row=2)
 
         # Add padding for all widgets
@@ -129,7 +139,7 @@ class UI:
         self.refresh_ui()
 
     def refresh_ui(self):
-        'Refresh and redisplay the directory of files'
+        "Refresh and redisplay the directory of files"
         filedata = refresh_files(self.srcdir)
         if self.filedata != filedata:
             self.filedata = filedata
@@ -140,7 +150,7 @@ class UI:
         self.refresh_ui_id = self.root.after(self.period, self.refresh_ui)
 
     def select_file(self, event):
-        'Select a file to open'
+        "Select a file to open"
         select = self.filelist.selection()
         if not select:
             return
@@ -152,10 +162,11 @@ class UI:
         else:
             fpath = self.srcdir / f'{filestem}.{GCASHEXT}'
             lockfile = fpath.with_name(fpath.name + f'.{LOCKEXT}')
-            if lockfile.exists() and not tk.messagebox.askokcancel(__doc__,
-                    f'File "{filestem}" is already open. '
-                    'Do you want to open it again?',
-                    default='cancel'):
+            if lockfile.exists() and not tk.messagebox.askokcancel(
+                __doc__,
+                f'File "{filestem}" is already open. Do you want to open it again?',
+                default='cancel',
+            ):
                 return
 
             errmsg = run_file(self.gc_prog, fpath)
@@ -164,7 +175,7 @@ class UI:
             tk.messagebox.showerror(f'{__doc__} Error', errmsg)
 
     def select_dir(self):
-        'Select a new source directory'
+        "Select a new source directory"
         adir = askdirectory(initialdir=self.srcdir, mustexist=True)
         if not adir:
             return
@@ -185,23 +196,45 @@ class UI:
         self.root.after_cancel(self.refresh_ui_id)
         self.refresh_ui()
 
+
 if __name__ == '__main__':
     # Process command line options
-    opt = argparse.ArgumentParser(description=__doc__.strip(),
-            epilog='Note you can set default starting options in '
-            f'{CNFFILE}.')
-    opt.add_argument('-p', '--period', type=int, default=2,
-            help='period in seconds at which to check directory, '
-                     'default = %(default)d')
-    opt.add_argument('-r', '--rows', type=int, default=6,
-            help='number of file rows displayed in table, '
-                     'default = %(default)d')
-    opt.add_argument('-g', '--gtk-theme',
-            help=f'GTK theme to use running {GCASHPROG}, e.g. "Adwaita:light"')
-    opt.add_argument('-f', '--font-size', type=int, default=10,
-            help='default font size, default=%(default)d')
-    opt.add_argument('-P', '--gnucash-program', default=GCASHPROG,
-            help='path to GnuCash program, default is "%(default)s"')
+    opt = argparse.ArgumentParser(
+        description=__doc__.strip(),
+        epilog=f'Note you can set default starting options in {CNFFILE}.',
+    )
+    opt.add_argument(
+        '-p',
+        '--period',
+        type=int,
+        default=2,
+        help='period in seconds at which to check directory, default = %(default)d',
+    )
+    opt.add_argument(
+        '-r',
+        '--rows',
+        type=int,
+        default=6,
+        help='number of file rows displayed in table, default = %(default)d',
+    )
+    opt.add_argument(
+        '-g',
+        '--gtk-theme',
+        help=f'GTK theme to use running {GCASHPROG}, e.g. "Adwaita:light"',
+    )
+    opt.add_argument(
+        '-f',
+        '--font-size',
+        type=int,
+        default=10,
+        help='default font size, default=%(default)d',
+    )
+    opt.add_argument(
+        '-P',
+        '--gnucash-program',
+        default=GCASHPROG,
+        help='path to GnuCash program, default is "%(default)s"',
+    )
 
     # Merge in default args from user config file. Then parse the
     # command line.
@@ -215,6 +248,4 @@ if __name__ == '__main__':
 
     args = opt.parse_args(shlex.split(cnflines) + sys.argv[1:])
 
-    root = tk.Tk(className=PROG)
-    UI(root, args)
-    root.mainloop()
+    UI(tk.Tk(className=PROG), args).root.mainloop()
