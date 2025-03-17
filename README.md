@@ -1,32 +1,31 @@
 ## GNUCASH-SELECT
 [![AUR](https://img.shields.io/aur/version/gnucash-select)](https://aur.archlinux.org/packages/gnucash-select/)
 
-[gnucash-select][REPO] is a simple desktop utility which you can run
-from your desktop environment (GNOME, KDE etc) to pop up a small GUI to
-view a list of your [GnuCash][GNUC] files (XML format only).
+[gnucash-select][REPO] is a simple desktop utility which you can run from your
+desktop environment (GNOME, KDE etc) to pop up a small GUI to view a list of
+your [GnuCash][GNUC] files (XML format only).
 
 ![gnucash-select](gnucash-select.png)
 
 [gnucash-select][REPO] is useful if you have more than one GnuCash file,
-particularly if you often open two or more of them in parallel. It
-iterates through your [GnuCash][GNUC] directory and filters out your
-main financial files from within the many other backup, log, and other
-files which [unfortunately GnuCash also places in that same
-directory](https://bugs.gnucash.org/show_bug.cgi?id=619119). Alongside
-each [GnuCash][GNUC] file, a count of the number of associated backup
-and log files is shown and also an indicator of whether that file is
-currently open in [GnuCash][GNUC] or not. If the file is not currently
-open, you can click on the file name in the GUI to open it in
-[GnuCash][GNUC].
+particularly if you often open two or more of them in parallel. It iterates
+through your [GnuCash][GNUC] directory and filters out for display your main
+financial files from within the many other backup, log, and other files which
+[unfortunately GnuCash also places in that same
+directory](https://bugs.gnucash.org/show_bug.cgi?id=619119). Alongside each
+[GnuCash][GNUC] file, a count of the number of associated backup and log files
+is shown and also an indicator of whether that file is currently open in
+[GnuCash][GNUC] or not. If the file is not currently open, you can click on the
+file name in the GUI to open it in [GnuCash][GNUC].
 
-This utility was created on a Linux desktop. I am not sure how well it
-works on macOS or Windows, raise an issue here if necessary. The latest
-version and documentation is available at
-https://github.com/bulletmark/gnucash-select.
+This utility was created on a Linux desktop. I am not sure how well it works on
+macOS or Windows, raise an issue here if necessary. The latest version and
+documentation is available at https://github.com/bulletmark/gnucash-select.
 
-If you like this utility then you may be interested in another gnucash
-utility I created to [update quote prices from the
-ASX](https://github.com/bulletmark/gnucash-asx-fetch), without using Finance::Quote.
+If you like this utility then you may be interested in another gnucash utility
+I created to [update quote prices from the
+ASX](https://github.com/bulletmark/gnucash-asx-fetch), without using
+Finance::Quote.
 
 ## INSTALLATION
 
