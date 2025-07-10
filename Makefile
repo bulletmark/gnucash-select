@@ -8,13 +8,6 @@ check:
 	vermin -vv --no-tips -i $(PYFILES)
 	md-link-checker
 
-build:
-	rm -rf dist
-	uv build
-
-upload: build
-	uv-publish
-
 doc:
 	update-readme-usage
 
