@@ -1,4 +1,4 @@
-NAME = $(shell basename $(CURDIR))
+NAME = gnucash-select
 PYFILES = $(NAME)
 
 check:
