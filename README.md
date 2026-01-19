@@ -32,7 +32,7 @@ Finance::Quote.
 NOTE: Arch users can just install [_gnucash-select from the
 AUR_][AUR].
 
-You need Python 3.7 or later, then install this software:
+You need Python 3.8 or later, then install this software:
 
 ```sh
 git clone https://github.com/bulletmark/gnucash-select.git
@@ -77,8 +77,7 @@ options:
   -P, --gnucash-program GNUCASH_PROGRAM
                         path to GnuCash program, default is "gnucash"
 
-Note you can set default starting options in $HOME/.config/gnucash-
-select.conf.
+Note you can set default starting options in ~/.config/gnucash-select.conf.
 ```
 
 ## LICENSE

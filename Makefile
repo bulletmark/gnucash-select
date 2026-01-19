@@ -3,8 +3,7 @@ PYFILES = $(NAME)
 
 check:
 	ruff check $(PYFILES)
-	mypy $(PYFILES)
-	pyright $(PYFILES)
+	ty check $(PYFILES)
 	vermin -vv --no-tips -i $(PYFILES)
 	md-link-checker
 
@@ -21,4 +20,4 @@ uninstall:
 	@./$(NAME)-setup -d "$(DESTDIR)" uninstall
 
 clean:
-	@rm -vrf *.egg-info .venv/ build/ dist/ __pycache__/
+	@rm -vrf *.egg-info build/ dist/ __pycache__/
