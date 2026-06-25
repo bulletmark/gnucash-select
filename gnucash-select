@@ -148,8 +148,7 @@ class UI:
 
     def select_file(self, __event__):
         "Select a file to open"
-        select = self.filelist.selection()
-        if not select:
+        if not (select := self.filelist.selection()):
             return
 
         tindex = self.filelist.index(select[0])
@@ -182,12 +181,10 @@ class UI:
 
     def select_dir(self):
         "Select a new source directory"
-        adir = askdirectory(initialdir=self.srcdir, mustexist=True)
-        if not adir:
+        if not (adir := askdirectory(initialdir=self.srcdir, mustexist=True)):
             return
 
-        apath = Path(adir)
-        if apath == self.srcdir:
+        if (apath := Path(adir)) == self.srcdir:
             return
 
         # Source directory has changed
@@ -210,7 +207,7 @@ if __name__ == '__main__':
         '-p',
         '--period',
         type=int,
-        default=2,
+        default=1,
         help='period in seconds at which to check directory, default = %(default)d',
     )
     opt.add_argument(
@@ -239,6 +236,4 @@ if __name__ == '__main__':
         help='path to GnuCash program, default is "%(default)s"',
     )
 
-    args = opt.parse_args()
-
-    UI(tk.Tk(className=PROG), args).root.mainloop()
+    UI(tk.Tk(className=PROG), opt.parse_args()).root.mainloop()
