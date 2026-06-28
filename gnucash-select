@@ -18,8 +18,6 @@ import platformdirs
 
 HEADINGS = ('File', ' Open ', 'Backups', 'Logs')
 GCASHPROG = 'gnucash' + Path(sys.executable).suffix
-GCASHEXT = Path(GCASHPROG).stem
-LOCKEXT = 'LCK'
 PROG = Path(sys.argv[0]).stem
 
 
@@ -39,27 +37,21 @@ def refresh_files(srcdir: Path) -> list[tuple[str, str, str | int, str | int]]:
 
     files = set()
     files_open = set()
-    files_bkup: dict[str, int] = Counter()
-    files_log: dict[str, int] = Counter()
+    files_bkup = Counter()
+    files_log = Counter()
 
-    for p in srcdir.iterdir():
-        parts = str(p.name).split('.', maxsplit=4)
-        plen = len(parts)
-        if not (2 <= plen <= 4) or parts[1] != GCASHEXT:
-            continue
-        name = parts[0]
-        if plen == 2:
-            files.add(name)
-        elif plen == 3:
-            if parts[2] == LOCKEXT:
+    for file in srcdir.iterdir():
+        match file.name.split('.'):
+            case name, 'gnucash':
+                files.add(name)
+            case name, 'gnucash', 'LCK':
                 files_open.add(name)
-        else:
-            dateval, ext = parts[2:]
-            if len(dateval) == 14 and dateval.isdigit():
-                if ext == 'log':
-                    files_log[name] += 1
-                elif ext == GCASHEXT:
+            case name, 'gnucash', num, 'gnucash':
+                if len(num) == 14 and num.isdigit():
                     files_bkup[name] += 1
+            case name, 'gnucash', num, 'log':
+                if len(num) == 14 and num.isdigit():
+                    files_log[name] += 1
 
     if not files:
         return [('<no files>', '', '', '')]
@@ -137,8 +129,7 @@ class UI:
 
     def refresh_ui(self):
         "Refresh and redisplay the directory of files"
-        filedata = refresh_files(self.srcdir)
-        if self.filedata != filedata:
+        if (filedata := refresh_files(self.srcdir)) != self.filedata:
             self.filedata = filedata
             self.filelist.delete(*self.filelist.get_children())
             for line in filedata:
@@ -156,8 +147,8 @@ class UI:
         if filestem[0] == '<':
             errmsg = 'No files to open'
         else:
-            fpath = self.srcdir / f'{filestem}.{GCASHEXT}'
-            lockfile = fpath.with_name(fpath.name + f'.{LOCKEXT}')
+            fpath = self.srcdir / f'{filestem}.gnucash'
+            lockfile = fpath.with_name(fpath.name + '.LCK')
             if lockfile.exists():
                 if (
                     remove_lock := tk.messagebox.askyesnocancel(  # type: ignore
