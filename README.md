@@ -40,6 +40,16 @@ cd gnucash-select
 sudo make install (or sudo ./gnucash-select-setup install)
 ```
 
+You also need to install the required python package dependencies, which are
+`platformdirs` and `argparse-from-file`. It is best to install these from your
+system repositories but if one or both are not available there you can install
+either from [PyPI] using [uv]:
+
+```sh
+sudo uv pip install --system --break-system-packages platformdirs
+sudo uv pip install --system --break-system-packages argparse-from-file
+```
+
 ## UPGRADE
 
 ```sh
@@ -68,7 +78,7 @@ GnuCash File Selector
 options:
   -h, --help            show this help message and exit
   -p, --period PERIOD   period in seconds at which to check directory, default
-                        = 2
+                        = 1
   -r, --rows ROWS       number of file rows displayed in table, default = 6
   -g, --gtk-theme GTK_THEME
                         GTK theme to use running gnucash, e.g. "Adwaita:light"
@@ -98,5 +108,7 @@ Desktop icon courtesy of [Freepik](https://www.flaticon.com/authors/freepik).
 [REPO]: https://github.com/bulletmark/gnucash-select/
 [AUR]: https://aur.archlinux.org/packages/gnucash-select/
 [GNUC]: https://www.gnucash.org/
+[PyPI]: https://pypi.org/
+[uv]: https://docs.astral.sh/uv/
 
 <!-- vim: se ai syn=markdown: -->
